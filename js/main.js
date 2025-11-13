@@ -1,96 +1,109 @@
-const semanasPorMes = 4;
+let datos = {
+  semanaActual: 1,
+  diaActual: 1,
+  totalCachorros: 0,
+  dias: [],
+  resumenSemanal: []
+};
+const btnIniciar = document.getElementById('btnIniciar');
+const contenedor = document.getElementById('contenedor');
+const entrada = document.getElementById('entradaDatos');
+const inputCantidad = document.getElementById('inputCantidad');
+const btnEmpezar = document.getElementById('btnEmpezar');
+const sectionPeso = document.getElementById('sectionPeso');
+const inputPeso = document.getElementById('inputPeso');
+const controles = document.getElementById('controles');
+const btnAgregar = document.getElementById('btnAgregarPeso');
+const btnAvanzar = document.getElementById('btnAvanzar');
+const btnRetroceder = document.getElementById('btnRetroceder');
+const btnFinalizar = document.getElementById('btnFinalizar');
+const mensaje = document.getElementById('mensaje');
 
-function solicitarPesoSemana(cachorroId, semana) {
-    const pesoString = prompt("Ingrese el peso del cachorro " + cachorroId + " en la semana " + semana + " (kg):");
-    const peso = +pesoString;
-    return peso;
-}
+function show(msg) { mensaje.textContent=msg; }
 
-function mostrarControl(cachorros) {
-    console.log("Control de peso de los cachorros:");
-    for (let i = 0; i < cachorros.length; i++) {
-        console.log("Cachorro " + (i + 1) + ":");
-        for (let j = 0; j < cachorros[i].length; j++) {
-            console.log("  Semana " + (j + 1) + ": " + cachorros[i][j] + " kg");
-        }
+function loadStorage() {
+  const data = localStorage.getItem('pesoSemanal');
+  if (data) {
+    datos = JSON.parse(data);
+    if (datos.totalCachorros > 0) {
+      contenedor.style.display='block';
+      entrada.style.display='none';
+      mostrarDia();
+      mostrarResumenSemanal();
     }
+  }
 }
-function verificarMes(mes, resultado) {
-    if (mes === 1 || mes === 2) {
-        resultado += "Es el momento de desparasitar y vacunar a los cachorros - Mes " + mes + "\n";
-    }
-    return resultado;
+function saveStorage() {
+  localStorage.setItem('pesoSemanal', JSON.stringify(datos));
 }
-
-function controlAvanceRetroceso() {
-    console.log("Iniciando control con avance y retroceso...");
-    const cantidadCachorrosStr = prompt("¿Cuántos cachorros estás controlando?");
-    if (cantidadCachorrosStr === null) return;
-    const cantidadCachorros = +cantidadCachorrosStr;
-    const cachorros = [];
-    for (let i = 0; i < cantidadCachorros; i++) {
-        cachorros[i] = [];
-    }
-
-    let semana = 1; 
-    let mesActual = 1;
-    const totalSemanas = 8; 
-    let resultado = '';
-
-    while (true) {
-        const accion = prompt(
-            "Semana " + semana + ". ¿Qué desea hacer?\n" +
-            "1. Avanzar\n" +
-            "2. Retroceder una semana\n" +
-            "3. Finalizar y guardar"
-        );
-
-        if (accion === null || accion === '3') {
-            break; 
-        }
-
-        switch (accion) {
-            case '1': 
-                for (let i = 0; i < cantidadCachorros; i++) {
-                    const pesoSemana = solicitarPesoSemana(i + 1, semana);
-                    if (pesoSemana !== null && !isNaN(pesoSemana)) {
-                        cachorros[i].push(pesoSemana);
-                    }
-                }
-                if (semana === 4) {
-                    alert("¡Es momento de desparasitar a los cachorros!");
-                }
-                if (semana % semanasPorMes === 0) {
-                    resultado += "Resumen del mes " + mesActual + "\n";
-                    console.log(resultado);
-                    mostrarControl(cachorros);
-                    resultado = verificarMes(mesActual, resultado);
-                    mesActual++;
-                }
-                semana++;
-                break;
-
-            case '2':
-                if (semana > 1) {
-                    semana--;
-                    for (let i = 0; i < cantidadCachorros; i++) {
-                        if (cachorros[i].length > 0) {
-                            cachorros[i].pop();
-                        }
-                    }
-                    alert("Se retrocedió a la semana " + semana);
-                } else {
-                    alert("Ya estás en la primera semana, no se puede retroceder más.");
-                }
-                break;
-
-            default:
-                alert("Opción no válida. Ingresa 1, 2 o 3.");
-                break;
-        }
-    }
-
-    alert("¡Información guardada!");
+function mostrarDia() {
+  document.getElementById('tituloSemana').textContent='Semana '+datos.semanaActual+' - Día '+datos.diaActual;
+  inputPeso.value=''; 
+  sectionPeso.style.display='block'; 
+  controles.style.display='block'; 
+  show('');
 }
-  
-controlAvanceRetroceso();
+function guardarPeso() {
+  const pesoKg = parseFloat(inputPeso.value);
+  if (isNaN(pesoKg)){ show('Peso inválido'); return; }
+  const pesoGr = pesoKg * 1000; // convertir a gramos
+  if (!datos.dias[datos.diaActual - 1]) {
+    datos.dias[datos.diaActual - 1] = [];
+  }
+  datos.dias[datos.diaActual - 1][0] = pesoGr;
+  if (datos.diaActual < 7) {
+    datos.diaActual++; mostrarDia();
+  } else {
+    calcularResumenSemana();
+    mostrarResumenSemanal();
+    datos.semanaActual++;
+    datos.diaActual=1;
+  }
+  saveStorage();
+}
+function calcularResumenSemana() {
+  let sumaSemana = 0;
+  for (let i=0; i<7; i++) {
+    if (datos.dias[i]) {
+      datos.dias[i].forEach(p => sumaSemana += p);
+    }
+  }
+  datos.resumenSemanal.push({
+    semana: datos.semanaActual,
+    suma: sumaSemana // en gramos
+  });
+}
+function mostrarResumenSemanal() {
+  let resumen='--- Resumen Semana '+(datos.semanaActual)+' ---\n';
+  const data = datos.resumenSemanal.find(r => r.semana === datos.semanaActual);
+  if (data) {
+    resumen += `Peso total en la semana: ${(data.suma/1000).toFixed(2)} kg\n`;
+  } else {
+    resumen += 'No hay datos de la semana.\n';
+  }
+  show(resumen);
+}
+function init() {
+  loadStorage();
+  btnIniciar.onclick=()=> {
+    contenedor.style.display='block'; entrada.style.display='block';
+    show('Ingresa cantidad y comienza.');
+    sectionPeso.style.display='none';
+    controles.style.display='none';
+  };
+  btnEmpezar.onclick=()=> {
+    const c = parseInt(inputCantidad.value);
+    if (!c || c<=0){show('Cantidad inválida'); return;}
+    datos.totalCachorros=c;
+    datos.dias=[]; datos.semanaActual=1; datos.diaActual=1; mostrarDia();
+  };
+  btnAgregar.onclick=guardarPeso;
+  btnAvanzar.onclick=()=>{ datos.semanaActual++; mostrarDia(); }
+  btnRetroceder.onclick=()=>{ if(datos.semanaActual>1){ datos.semanaActual--; mostrarDia(); } }
+  btnFinalizar.onclick=()=> {
+    show('Datos guardados.');
+    localStorage.removeItem('pesoSemanal');
+    controles.style.display='none'; sectionPeso.style.display='none';
+  };
+}
+init();
