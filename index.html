@@ -5,37 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Control de Peso de Cachorros</title>
   <link rel="stylesheet" href="estilos.css" />
-  <script src="./js/main.js" defer></script>
   <link rel="stylesheet" href="./css/style.css">
+  <script src="./js/main.js" defer></script>
+  <script src="./js/peso.js" defer></script>
 </head>
 <body>
-
-<h1>Control de Peso de Cachorros</h1>
-
-<div id="contenedor">
-  <button id="btnIniciar">Iniciar Control</button>
-
-  <div id="entradaDatos" class="hidden">
-    <label>Cantidad de cachorros: </label>
-    <input type="number" id="inputCantidad" min="1" />
-    <button id="btnEmpezar">Comenzar</button>
+  <div id="contenedor">
+    <h1>Seguimiento de Peso de Cachorros</h1>
+    <div id="entradaDatos">
+      <label for="inputCantidad">Cantidad de cachorros:</label>
+      <input type="number" id="inputCantidad" required min="1" max="12"/>
+      <button id="btnIniciar">Iniciar</button>
+    </div>
+    <div id="sectionPeso" style="display: none;">
+      <h2>Ingrese el peso diario de cada cachorro:</h2>
+      <ul id="listaPesos"></ul> 
+      <div id="mensaje"></div>
+      <button id="btnGuardarPesos">Guardar Pesos</button>
+      <button id="btnReiniciar">Reiniciar Datos</button> 
+    </div>
   </div>
-
-  <div id="sectionPeso" class="hidden">
-    <h3 id="tituloSemana"></h3>
-    <label>Ingrese peso (kg): </label>
-    <input type="number" id="inputPeso" step="0.01" />
-    <button id="btnAgregarPeso">Guardar Peso</button>
-  </div>
-
-  <div id="controles" class="hidden">
-    <button id="btnAvanzar">Avanzar</button>
-    <button id="btnRetroceder">Retroceder</button>
-    <button id="btnFinalizar">Finalizar</button>
-  </div>
-
-  <div id="mensaje"></div>
-</div>
-
 </body>
 </html>
